@@ -1,0 +1,6 @@
+PyQt6
+pygments
+pyqtgraph
+python-dateutil
+schedule
+requests
