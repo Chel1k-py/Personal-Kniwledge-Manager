@@ -76,12 +76,12 @@ class Database:
         self.conn.commit()
         return cur
 
-    def get_password(self) -> Optional[str]:
+    def get_password(self):
         row = self.execute("SELECT value FROM app_settings "
                            "WHERE key='password'").fetchone()
         return row[0] if row else None
 
-    def set_password(self, password: str) -> None:
+    def set_password(self, password):
         hashed = hashlib.sha256(password.encode()).hexdigest()
         self.execute("INSERT OR REPLACE INTO app_settings(key, value) "
                      "VALUES('password', ?)",

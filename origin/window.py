@@ -263,7 +263,6 @@ class MainWindow(QMainWindow):
             self.db.execute("DELETE FROM reminders "
                                 "WHERE note_id = ?",
                             (check_tit[0],))
-
         self.db.execute("INSERT INTO notes(title, content, created) "
                             "VALUES(?, ?, datetime('now'))",
                         (title, content))
@@ -277,6 +276,7 @@ class MainWindow(QMainWindow):
 
         QMessageBox.information(self, "Сохранено", "Заметка создана.")
         self.load()
+
 
     def check_rems(self):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
