@@ -70,7 +70,7 @@ class Database:
 
         self.conn.commit()
 
-    def execute(self, sql: str, params: Tuple = ()):
+    def execute(self, sql, params: Tuple = ()):
         cur = self.conn.cursor()
         cur.execute(sql, params)
         self.conn.commit()
@@ -78,7 +78,8 @@ class Database:
 
     def get_password(self):
         row = self.execute("SELECT value FROM app_settings "
-                           "WHERE key='password'").fetchone()
+                           "WHERE key='password'"
+                           ).fetchone()
         return row[0] if row else None
 
     def set_password(self, password):
@@ -87,11 +88,13 @@ class Database:
                      "VALUES('password', ?)",
                      (hashed,))
 
+
     def verify(self, password):
         hashed = hashlib.sha256(password.encode()).hexdigest()
         row = self.execute("SELECT value FROM app_settings "
-                           "WHERE key='password'").fetchone()
-        return bool(row and row[0] == hashed)
+                           "WHERE key='password'"
+                           ).fetchone()
+        return bool(row[0] == hashed)
 
     def add_tag(self, name):
         name = name.strip()
@@ -100,19 +103,22 @@ class Database:
         try:
             cur = self.execute("INSERT INTO tags(name) "
                                "VALUES(?)",
-                               (name,))
+                               (name,)
+                               )
             return cur.lastrowid
         except sqlite3.IntegrityError:
             cur = self.execute("SELECT id FROM tags "
                                "WHERE name = ?",
-                               (name,))
+                               (name,)
+                               )
             row = cur.fetchone()
             return row[0]
 
     def set_tags(self, note_id: int, tags):
         self.execute("DELETE FROM note_tags "
                      "WHERE note_id = ?",
-                     (note_id,))
+                     (note_id,)
+                     )
         for tag in tags:
             tag = tag.strip()
             if not tag:
@@ -120,9 +126,10 @@ class Database:
             tag_id = self.add_tag(tag)
             self.execute("INSERT OR IGNORE INTO note_tags(note_id, tag_id) "
                          "VALUES(?, ?)",
-                         (note_id, tag_id))
+                         (note_id, tag_id)
+                         )
 
-    def get_tags(self, note_id: int) -> List[str]:
+    def get_tags(self, note_id: int):
         cur = self.execute(
             "SELECT t.name FROM tags t "
             "JOIN note_tags nt ON t.id=nt.tag_id "
@@ -131,24 +138,24 @@ class Database:
         )
         return [r[0] for r in cur.fetchall()]
 
-    def add_rem(self, note_id: int, remind_at: str) -> int:
+    def add_rem(self, note_id: int, remind_at: str):
         cur = self.execute("INSERT INTO reminders(note_id, remind_at, mail_sent) "
                            "VALUES(?, ?, 0)",
                            (note_id, remind_at))
         return cur.lastrowid
 
-    def get_rem(self, note_id: int) -> List[Tuple[int, str, int]]:
+    def get_rem(self, note_id: int):
         cur = self.execute("SELECT id, remind_at, mail_sent FROM reminders "
                            "WHERE note_id = ? "
                            "ORDER BY remind_at ASC", (note_id,))
         return cur.fetchall()
 
-    def del_rem(self, reminder_id: int) -> None:
+    def del_rem(self, reminder_id: int):
         self.execute("DELETE FROM reminders "
                      "WHERE id = ?",
                      (reminder_id,))
 
-    def get_rems(self, current_datetime: str) -> List[Tuple[int, int, str, str]]:
+    def get_rems(self, current_datetime: str):
         cur = self.execute(
             "SELECT r.id, r.note_id, r.remind_at, n.title FROM reminders r "
             "JOIN notes n ON n.id = r.note_id "
@@ -157,15 +164,17 @@ class Database:
         )
         return cur.fetchall()
 
-    def mark_rem(self, reminder_id: int) -> None:
+    def mark_rem(self, reminder_id: int):
         self.execute("UPDATE reminders SET mail_sent = 1 "
                      "WHERE id = ?",
-                     (reminder_id,))
+                     (reminder_id,)
+                     )
 
     def get_note(self, note_id: int):
         return self.execute("SELECT id, title, content, created FROM notes "
                             "WHERE id = ?",
-                            (note_id,)).fetchone()
+                            (note_id,)
+                            ).fetchone()
 
     def close(self):
         self.conn.close()

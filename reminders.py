@@ -42,9 +42,17 @@ class Reminder(QObject):
 
         msg = QMessageBox(self.parent)
         msg.setWindowTitle("Напоминание")
-        msg.setText(f"Напоминание по заметке:\n\n<b>{title}</b>\n\nВремя: {remind_at}")
+        msg.setText(
+                    f"Напоминание по заметке:\n\n"
+                    f"{title}\n\n"
+                    f"Время: {remind_at}"
+                )
         msg.setIcon(QMessageBox.Icon.Information)
         msg.exec()
 
     def _mark_sent(self, rem_id: int):
-        self.db.execute("UPDATE reminders SET mail_sent = 1 WHERE id = ?", (rem_id,))
+        self.db.execute("UPDATE reminders "
+                        "SET mail_sent = 1 "
+                        "WHERE id = ?",
+                        (rem_id,)
+                        )
